@@ -6,21 +6,24 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"github.com/joho/godotenv"
+	"os"
+	"webapi/daily-ping-api/models"
+	"webapi/daily-ping-api/storage"
 )
 
 type Repository struct {
 	DB *gorm.DB
 }
 
-type HealthStatus struct {
-	Status      string   `json:"status"`
-	UserId      string   `json:"userid"`
+type User struct {
+	Phone			string		`json:"phone"`
+	IsOtpVerified	bool  		`json:"is_otp_verified"`
 }
 
-func(r *Repository) UpdateStatus(context *fiber.Ctx) error {
-	healthStatus := HealthStatus{}
+func(r *Repository) CreateUser(context *fiber.Ctx) error {
+	user := User{}
 
-	err := context.BodyParser(&healthStatus)
+	err := context.BodyParser(&user)
 
 	if(err != nil) {
 		context.Status(http.StatusUnprocessableEntity).JSON(
@@ -28,21 +31,21 @@ func(r *Repository) UpdateStatus(context *fiber.Ctx) error {
 			return err
 	}
 
-	err := r.DB.Create(healthStatus).Error 
+	err = r.DB.Create(user).Error 
 
 	if (err != nil) {
 		context.Status(http.StatusBadRequest).JSON(
 			&fiber.Map{"message": "Bad Request"})
 			return err
 	}
-	context.Status(http.StatusOk).JSON(&fiber.Map{"message": "Status has been added"})
+	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "User has been added"})
 	return nil
 
 }
 
-func(r *Repository) SetupRoutes(app *fiber.app) {
-	api := app.group("/api")
-	api.post("/update_status", r.UpdateStatus)
+func(r *Repository) SetupRoutes(app *fiber.App) {
+	api := app.Group("/api")
+	api.Post("/create_user", r.CreateUser)
 }
 
 func main() {
@@ -51,14 +54,29 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r := Repository {
-		DB: db,
+	config := &storage.Config{
+		Host:	os.Getenv("DB_HOST"),
+		Port: os.Getenv("DB_PORT"),
+		User: os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASS"),
+		SSLMode: os.Getenv("DB_SSLMODE"),
+		DBName: os.Getenv("DB_NAME"),
 	}
 
 	db, err := storage.NewConnection(config)
 
 	if(err != nil) {
 		log.Fatal("There is an error with database")
+	}
+
+	err = models.MigrateUsers(db)
+
+	if (err != nil) {
+		log.Fatal("Could not migrate")
+	}
+
+	r := Repository {
+		DB: db,
 	}
 
 	app := fiber.New()
