@@ -43,8 +43,23 @@ func(r *Repository) CreateUser(context *fiber.Ctx) error {
 
 }
 
+func(r *Repository) GetUser(context *fiber.Ctx) error {
+	users := []models.Users{}
+
+	r.DB.Find(&users)
+	if (len(users) == 0) {
+		context.Status(http.StatusNotFound).JSON(
+			&fiber.Map{"message": "Internal server error"})
+			return nil
+	}
+	context.Status(http.StatusOK).JSON(
+		&fiber.Map{"success": true, "data": users, })
+		return nil
+}
+
 func(r *Repository) SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
+	api.Get("/get_user", r.GetUser)
 	api.Post("/create_user", r.CreateUser)
 }
 
