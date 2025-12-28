@@ -17,7 +17,7 @@ type Repository struct {
 
 type User struct {
 	Phone			string		`json:"phone"`
-	IsOtpVerified	bool  		`json:"is_otp_verified"`
+	IsPhoneVerified	bool  		`json:"is_phone_verified"`
 }
 
 func(r *Repository) CreateUser(context *fiber.Ctx) error {
@@ -90,6 +90,13 @@ func main() {
 		log.Fatal("Could not migrate")
 	}
 
+	err = models.AlterUsersTable(db)
+
+	if (err != nil) {
+		log.Fatal("Could not run migration for alter users table")
+	}
+
+	
 	r := Repository {
 		DB: db,
 	}
