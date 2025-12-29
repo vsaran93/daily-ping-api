@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type PhoneVerifications struct {
+type PhoneVerification struct {
 	ID			uint		`gorm:"primaryKey;autoIncrement" json:"id"`
 	Phone		string		`json:"phone"` 
 	Otp			string		`json:"otp"`

@@ -44,7 +44,7 @@ func(r *Repository) CreateUser(context *fiber.Ctx) error {
 }
 
 func(r *Repository) GetUser(context *fiber.Ctx) error {
-	users := []models.Users{}
+	users := []models.User{}
 
 	r.DB.Find(&users)
 	if (len(users) == 0) {
