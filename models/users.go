@@ -13,6 +13,7 @@ type User struct {
 	Roles			[]Role 		`gorm:"many2many:user_roles"`
 }
 
+
 func MigrateUsers(db *gorm.DB) error {
 	err := db.AutoMigrate(&User{}, &PhoneVerification{}, &Alert{}, &DailyCheckIn{}, &Role{})
 	return err

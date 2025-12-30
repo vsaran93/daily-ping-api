@@ -7,60 +7,17 @@ import (
 	"gorm.io/gorm"
 	"github.com/joho/godotenv"
 	"os"
+	"webapi/daily-ping-api/utils"
 	"webapi/daily-ping-api/models"
 	"webapi/daily-ping-api/storage"
+	"webapi/daily-ping-api/app/controllers"
 )
 
-type Repository struct {
-	DB *gorm.DB
-}
 
-type User struct {
-	Phone			string		`json:"phone"`
-	IsPhoneVerified	bool  		`json:"is_phone_verified"`
-}
-
-func(r *Repository) CreateUser(context *fiber.Ctx) error {
-	user := User{}
-
-	err := context.BodyParser(&user)
-
-	if(err != nil) {
-		context.Status(http.StatusUnprocessableEntity).JSON(
-			&fiber.Map{"message": "Request Failed"})
-			return err
-	}
-
-	err = r.DB.Create(user).Error 
-
-	if (err != nil) {
-		context.Status(http.StatusBadRequest).JSON(
-			&fiber.Map{"message": "Bad Request"})
-			return err
-	}
-	context.Status(http.StatusOK).JSON(&fiber.Map{"message": "User has been added"})
-	return nil
-
-}
-
-func(r *Repository) GetUser(context *fiber.Ctx) error {
-	users := []models.User{}
-
-	r.DB.Find(&users)
-	if (len(users) == 0) {
-		context.Status(http.StatusNotFound).JSON(
-			&fiber.Map{"message": "Internal server error"})
-			return nil
-	}
-	context.Status(http.StatusOK).JSON(
-		&fiber.Map{"success": true, "data": users, })
-		return nil
-}
-
-func(r *Repository) SetupRoutes(app *fiber.App) {
+func(r *utils.Repository) SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
-	api.Get("/get_user", r.GetUser)
-	api.Post("/create_user", r.CreateUser)
+	api.Get("/get_user", r.models.GetUser(r))
+	api.Post("/create_user", r.models.CreateUser(r))
 }
 
 func main() {
