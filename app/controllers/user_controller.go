@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"github.com/gofiber/fiber/v2"
 	"webapi/daily-ping-api/models"
-	"webapi/daily-ping-api/utils"
+	"webapi/daily-ping-api/storage"
 )
 
 type User struct {
@@ -14,9 +14,10 @@ type User struct {
 }
 
 
-func CreateUser(r *utils.Repository, context *fiber.Ctx) error {
+func CreateUser(context *fiber.Ctx) error {
 	user := User{}
 
+	db := storage.OpenDbConnection();
 	err := context.BodyParser(&user)
 
 	if(err != nil) {
@@ -25,7 +26,7 @@ func CreateUser(r *utils.Repository, context *fiber.Ctx) error {
 			return err
 	}
 
-	err = r.DB.Create(user).Error 
+	err = db.Create(user).Error 
 
 	if (err != nil) {
 		context.Status(http.StatusBadRequest).JSON(
@@ -37,10 +38,12 @@ func CreateUser(r *utils.Repository, context *fiber.Ctx) error {
 
 }
 
-func GetUser(r *utils.Repository, context *fiber.Ctx) error {
+func GetUser(context *fiber.Ctx) error {
 	users := []models.User{}
 
-	r.DB.Find(&users)
+	db := storage.OpenDbConnection();
+
+	db.Find(&users)
 	if (len(users) == 0) {
 		context.Status(http.StatusNotFound).JSON(
 			&fiber.Map{"message": "Internal server error"})
