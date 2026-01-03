@@ -36,6 +36,7 @@ func main() {
 	sqlDB.Close();
 
 	app := fiber.New()
-	routes.SetupRoutes(app)
+	routes.PublicRoutes(app)
+	routes.PrivateRoutes(app)
 	app.Listen(":8080")
 }

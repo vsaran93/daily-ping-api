@@ -6,9 +6,8 @@ import (
 )
 
 
-func SetupRoutes(app *fiber.App) {
+func PublicRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	api.Get("/token/new", controllers.GenerateNewAccessToken)
-	api.Get("/user", controllers.GetUser)
 	api.Post("/create_user", controllers.CreateUser)
 }
